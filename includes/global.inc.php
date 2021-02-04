@@ -1,8 +1,8 @@
 <?php
-// $CURLOCALE = setlocale( FIXME );
-if ( ! strlen($CURLOCALE) ) {
-    user_error('Locale inte inställd!', E_USER_WARNING);
-}
+//$CURLOCALE = setlocale
+//if ( ! strlen($CURLOCALE) ) {
+    //user_error('Locale inte inställd!', E_USER_WARNING);
+//}
 
 
 /**
@@ -42,7 +42,7 @@ function get_dbh()
                     "PDO kunde inte instansieras, uppkoppling misslyckad.");
             }
 
-            ts_sql = "SET time_zone = '" . LAXHJ_TZ . "'";
+            $ts_sql = "SET time_zone = '" . LAXHJ_TZ . "'";
             $svar = $dbh->query($ts_sql);
 
             // Lite inställningar för MySQL,
@@ -80,6 +80,18 @@ function get_dbh()
  */
 function fetch_blog_comments($articlesID, $dbh)
 {
-    // FIXME
+    $sql= "SELECT * FROM comments WHERE articlesID = :aid ORDER BY pubdate ASC";
+    $stmt->bindParam(":aid", $articlesID);
+    $stmt = $dbh->prepare($sql);
+    $stmt->execute();
+    $comments = $stmt->fetchALL(PDO::FETCH_ASSOC);
+    // Tar inte för givet att FETCH_ASSOC angivits
+
+    //Provisorisk säkring mot XSS, lägg märke till & tecknet
+    foreach ( $comments as &$cmt ) {
+        $cmt['name'] = htmlspecialchars($cmt['name'], ENT_QUOTES);
+        $cmt['text'] = htmlspecialchars($cmt['text'], ENT_QUOTES);
+    }
+    return $comments;
 }
 
